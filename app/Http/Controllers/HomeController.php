@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatMessage;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -23,6 +26,30 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $messages = ChatMessage::chatLists();
+        $chatUsers = $messages->unique('refer_id');
+        $messages->groupBy('refer_id');
+
+        return view('home', compact('messages', 'chatUsers'));
+    }
+
+    public function chatpage()
+    {
+        $refer_id = request()->query('refer_id');
+        $messages = ChatMessage::chatLists(request()->query('refer_id'));
+        $chatUser = ChatMessage::getUSerName(request()->query('refer_id'));
+
+        return view('chatpage', compact('refer_id', 'messages', 'chatUser'));
+    }
+
+    public function chat(Request $request)
+    {
+        ChatMessage::create([
+            'sender_id' => Auth::id(),
+            'receiver_id' => $request->refer_id,
+            'message' => $request->message
+        ]);
+
+        return redirect()->back();
     }
 }
