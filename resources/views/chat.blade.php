@@ -12,8 +12,15 @@
     <div class="chat-box">
         <div class="message-container">
             <div class="messages">
-                <div class="message other-message">Hello there!</div>
-                <div class="message own-message">Hi, how are you?</div>
+                @foreach($messages as $message)
+                    @if($message->sender_id==auth()->user()->id)
+                    <div class="message own-message mb-2">{{ $message->message }}</div>
+                    @else
+                    <div class="message other-message mb-2">{{ $message->message }}</div>
+                    @endif
+                @endforeach
+
+
                 <!-- More messages -->
             </div>
             <form action="{{ route('send-message') }}" method="post">

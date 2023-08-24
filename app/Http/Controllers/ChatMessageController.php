@@ -18,7 +18,14 @@ class ChatMessageController extends Controller
 
         $users=User::where('id','<>',auth()->user()->id)->get();
         $messages=ChatMessage::where('sender_id',auth()->user()->id)
-            ->where('receiver_id',$receiver_id)
+            ->where(function($query) use($receiver_id){
+                $query->where('sender_id',auth()->user()->id);
+                $query->where('receiver_id',$receiver_id);
+            })
+            ->orWhere(function($query) use($receiver_id){
+                $query->where('sender_id',$receiver_id);
+                $query->where('receiver_id',auth()->user()->id);
+            })
             ->get();
         return view('chat',compact('users','messages'));
     }
@@ -36,7 +43,7 @@ class ChatMessageController extends Controller
         $message->save();
 
         $messages=ChatMessage::where('sender_id',auth()->user()->id)
-            ->where('receiver_id',$this->receiver_id)
+            ->where('receiver_id',$receiver_id)
             ->get();
         return redirect()->back()->with('messages',$messages);
     }
