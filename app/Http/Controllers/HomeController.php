@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatMessage;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class HomeController extends Controller
     public function index()
     {
         $messages = ChatMessage::chatLists();
-        $chatUsers = $messages->unique('refer_id');
+        $chatUsers = User::where('id', '<>', Auth::id())->get();
         $messages->groupBy('refer_id');
 
         return view('home', compact('messages', 'chatUsers'));

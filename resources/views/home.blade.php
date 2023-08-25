@@ -35,7 +35,7 @@
                         @foreach ($chatUsers as $key => $chatUser)
                         <a href="{{ route('chatpage', ['refer_id'=> $chatUser->refer_id]) }}" class="text-decoration-none text-dark">
                             <div class="col-12">
-                                    {{ $chatUser->getUserName($chatUser->refer_id) }}
+                                    {{ $chatUser->name }}
                             </div>
                         </a>
                         <div class="col-12 p-0 g-0">
