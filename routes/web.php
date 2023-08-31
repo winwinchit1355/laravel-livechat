@@ -1,5 +1,7 @@
 <?php
 
+use App\Events\ChatEvent;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatMessageController;
 
@@ -25,5 +27,10 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::group(['middleware' => 'auth:web'], function () {
     Route::get('messages', [ChatMessageController::class,'index'])->name('chat');
-    Route::post('send-message', [ChatMessageController::class,'store'])->name('send-message');
+    Route::get('fetch-messages', [ChatMessageController::class, 'fetchMessages'])->name('fetch-message');
+    // Route::post('send-message', [ChatMessageController::class,'store'])->name('send-message');
+    Route::post('send-message',function (Request $request){
+        event(new ChatEvent($request->username, $request->message));
+        return ['success' => true];
+    });
 });

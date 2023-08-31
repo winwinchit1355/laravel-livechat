@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Events\ChatEvent;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 
@@ -38,13 +39,19 @@ class ChatMessageController extends Controller
 
         $message=new ChatMessage;
         $message->sender_id=auth()->user()->id;
-        $message->receiver_id=$request->receiver_id;
+        $message->receiver_id=$receiver_id;
         $message->message=$request->message;
         $message->save();
+        event(new ChatEvent(auth()->user(),'hello world'));
+        // event(new ChatEvent(auth()->user(), $message->message));
 
         $messages=ChatMessage::where('sender_id',auth()->user()->id)
             ->where('receiver_id',$receiver_id)
             ->get();
-        return redirect()->back()->with('messages',$messages);
+        return response()->json(['success' => true,'username'=>$request->username,'message'=>$messages]);
+    }
+    public function fetchMessages()
+    {
+        return ChatMessage::with('user')->get();
     }
 }
