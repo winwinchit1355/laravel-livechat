@@ -41,3 +41,24 @@
         </div>
     </div>
 @endsection
+@section('scripts')
+<script>
+    var socket = new WebSocket('ws://127.0.0.1:8080');
+
+    socket.onopen = function(e) {
+       console.log("Connection established!");
+    };
+
+    socket.onmessage = function(e) {
+       console.log(e.data);
+    };
+
+    function register() {
+     conn.send(JSON.stringify({command: "register", userId: "1"}));
+    }
+
+    function send() {
+     conn.send(JSON.stringify({command: "message", to: "2", from: "1", data: {message: "halo user 2"}}));
+    }
+   </script>
+@endsection
