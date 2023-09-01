@@ -33,7 +33,7 @@
                             </div>
                         @endif
                         @foreach ($chatUsers as $key => $chatUser)
-                        <a href="{{ route('chatpage', ['refer_id'=> $chatUser->refer_id]) }}" class="text-decoration-none text-dark">
+                        <a href="{{ route('chatpage', ['refer_id'=> $chatUser->id]) }}" class="text-decoration-none text-dark">
                             <div class="col-12">
                                     {{ $chatUser->name }}
                             </div>
