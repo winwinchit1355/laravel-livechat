@@ -33,4 +33,7 @@ Route::group(['middleware' => 'auth:web'], function () {
         event(new ChatEvent($request->username, $request->message));
         return ['success' => true];
     });
+    Route::get('all',[ChatMessageController::class, 'all'])->name('all');
+    Route::post('broadcast',[ChatMessageController::class, 'broadcast'])->name('broadcast');
+    Route::post('receive',[ChatMessageController::class, 'receive'])->name('receive');
 });

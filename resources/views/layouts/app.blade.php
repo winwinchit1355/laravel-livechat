@@ -18,6 +18,7 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
     @yield('css')
 </head>
@@ -54,7 +55,8 @@
                                 </li>
                             @endif
                         @else
-                            <li class="nav-item"><a class="nav-link" href="{{ route('chat') }}">Chat</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('chat') }}">Chat1</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('all') }}">Chat2</a></li>
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }}
@@ -82,6 +84,7 @@
             @yield('content')
         </main>
     </div>
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script>
         $.ajaxSetup({
