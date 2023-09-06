@@ -51,7 +51,7 @@
         </div>
     </div>
     <div class="messages">
-        @include('receive',['message'=>'Welcome chat!'])
+        @include('pusher.receive',['message'=>'Welcome chat!'])
     </div>
     <div class="bottom">
         <form action="" id="message_form">
