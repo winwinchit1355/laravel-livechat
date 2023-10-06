@@ -33,7 +33,7 @@ Route::group(['middleware' => 'auth:web'], function () {
         event(new ChatEvent($request->username, $request->message));
         return ['success' => true];
     });
-    Route::get('all',[PusherChatMessageController::class, 'all'])->name('all');
+    Route::get('pusher-chat',[PusherChatMessageController::class, 'pusherChat'])->name('pusher-chat');
     Route::post('broadcast',[PusherChatMessageController::class, 'broadcast'])->name('broadcast');
     Route::post('receive',[PusherChatMessageController::class, 'receive'])->name('receive');
 });

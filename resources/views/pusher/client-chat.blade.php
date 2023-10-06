@@ -6,7 +6,7 @@
         margin-top:20px;
         background:#eee;
     }
-    .box {
+    {{--  .box {
         position: relative;
         border-radius: 3px;
         background: #ffffff;
@@ -38,7 +38,16 @@
         padding: 10px;
         height: 150px;
         overflow: auto;
+    }  --}}
+    .message-box{
+        display: flex;
+        align-items: center;
     }
+    .message-input, .message-input input{
+        width: 100% !important;
+    }
+
+
 </style>
 @endsection
 @section('content')
@@ -55,8 +64,20 @@
     </div>
     <div class="bottom">
         <form action="" id="message_form">
-            <input type="text" id="message" name="message" autocomplete="off">
-            <button type="submit"></button>
+            <div class="message-box">
+                <div class="file-upload ">
+                    <span class="file-upload btn border-0">
+                        <i class="fa fa-plus"></i>
+                    </span>
+                </div>
+                <div class="message-input">
+                    <input type="text" id="message" name="message" autocomplete="off">
+                </div>
+                <div class="send">
+                    <button type="submit" class="border-0"></button>
+                </div>
+            </div>
+
         </form>
     </div>
 </div>
