@@ -20,9 +20,10 @@ class PusherBroadcast implements ShouldBroadcast
      *
      * @return void
      */
-    public function __construct($message)
+    public function __construct($message,$files)
     {
         $this->message=$message;
+        $this->files=$files;
     }
 
     /**

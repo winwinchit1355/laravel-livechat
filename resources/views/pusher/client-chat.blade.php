@@ -43,7 +43,15 @@
         display: flex;
         align-items: center;
     }
-    .message-input, .message-input input{
+    .message-input{
+        display: flex;
+        flex-direction: column;
+        width: 100%
+    }
+    .message-input div{
+        width: 100%;
+    }
+    .message-input div input{
         width: 100% !important;
     }
 
@@ -55,23 +63,55 @@
     <div class="top">
         <img src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" width="100px"  alt="">
         <div>
-            <p>WinWinChit</p>
+            <p>{{ Auth::user()->name }}</p>
             <small>Online</small>
         </div>
     </div>
     <div class="messages">
-        @include('pusher.receive',['message'=>'Welcome chat!'])
+        @foreach($oldMessages as $oldMessage)
+            @if($oldMessage->sender_id == Auth::id())
+                <div class="right message">
+                    {{--  <img class="avatar-img" src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" width="100px" alt="">  --}}
+                    @if(isset($oldMessage->file) && $oldMessage->file != null)
+                    <img class="message-image" src="{{ $oldMessage->file }}" alt="" width="100%">
+                    <br>
+                    @endif
+                    @if($oldMessage->message != null)
+                    <p>{{ $oldMessage->message }}</p>
+                    @endif
+                </div>
+            @else
+            <div class="left message">
+                {{--  <img class="avatar-img" src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" width="100px"  alt="">  --}}
+                @if(isset($oldMessage->file) && $oldMessage->file != null)
+                <img class="message-image" src="{{ $oldMessage->file }}" alt="" width="100%">
+                    <br>
+                @endif
+                @if($oldMessage->message != null)
+                <p>{{ $message }}</p>
+                @endif
+            </div>
+            @endif
+        @endforeach
+        @include('pusher.receive',['message'=>''])
     </div>
     <div class="bottom">
-        <form action="" id="message_form">
+        <form action="" id="message_form" enctype="multipart/form-data" >
+            @csrf
             <div class="message-box">
                 <div class="file-upload ">
-                    <span class="file-upload btn border-0">
+                    <span class="btn border-0" id="file-upload">
                         <i class="fa fa-plus"></i>
                     </span>
+                    <input type="file" name="file" id="fileInput" style="display: none" />
                 </div>
                 <div class="message-input">
-                    <input type="text" id="message" name="message" autocomplete="off">
+                    <div>
+                        <img id="previewImage" height="80" src="" alt="Preview" style="display: none;">
+                    </div>
+                    <div>
+                        <input type="text" id="message" name="message" autocomplete="off">
+                    </div>
                 </div>
                 <div class="send">
                     <button type="submit" class="border-0"></button>
@@ -104,22 +144,62 @@
     $('#message_form').submit(function(event){
         event.preventDefault();
         var url="{{ route('broadcast') }}";
+        var form = $(this)[0];
+        var formData = new FormData(form);
+        formData.forEach(function (value, key) {
+            console.log(key, value);
+            // You can perform validation or other checks here
+        });
         $.ajax({
             url:url,
             method:'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
             headers:{
                 'X-Socket-Id':pusher.connection.socket_id
             },
-            data:{
-                _token:'{{ csrf_token() }}',
-                message:$("form #message").val()
-            }
+
         }).done(function(res){
+            const previewImage = document.getElementById('previewImage');
+            previewImage.style.display='none';
             $('.messages > .message').last().after(res);
             $('form #message').val('');
             $(document).scrollTop($(document).height());
         })
-    })
+    });
+    {{--  file upload   --}}
+    document.getElementById('file-upload').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+
+      });
+      $('#fileInput').on('change',function(){
+        const previewImage = document.getElementById('previewImage');
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput.files.length > 0) {
+            const selectedFile = fileInput.files[0];
+
+            // Check if the selected file is an image
+            if (selectedFile.type.startsWith('image/')) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // Set the source of the image element to the selected file's data URL
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block'; // Show the image
+                };
+
+                // Read the selected file as a data URL
+                reader.readAsDataURL(selectedFile);
+            } else {
+                // Handle cases where the selected file is not an image
+                alert('Please select an image file.');
+            }
+        }
+      })
+
+
+
 </script>
 
 @endsection

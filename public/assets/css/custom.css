@@ -78,3 +78,32 @@ body, h1, h2, h3, p, ul, li {
     border-radius: 5px;
     cursor: pointer;
 }
+
+/* client message  */
+.message-image{
+    display: inline-flex;
+    margin: 0.25rem;
+    font-weight: var(--bs-body-font-weight);
+    line-height: var(--bs-body-line-height);
+    text-align: var(--bs-body-text-align);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    font-family: "Nunito", sans-serif;
+    font-size: 1rem;
+    color: #161c2d;
+    word-wrap: break-word;
+    box-sizing: border-box;
+    vertical-align: middle;
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
+    box-shadow: 0 0 3px rgba(60, 72, 88, 0.15) !important;
+    width: 30% !important;
+}
+.right{
+    clear: both;
+}
+.right .message-image{
+    /* float: right; */
+}
+.left .message-image{
+    /* float: left; */
+}
