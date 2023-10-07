@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use App\Events\PusherBroadcast;
+use App\Models\ReadReceipt;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Auth;
@@ -54,7 +55,7 @@ class PusherChatMessageController extends Controller
                 $message->file=$filePath;
                 $message->save();
             }
-            if($request->has('message'))
+            if($request->has('message') && $request->message != null)
             {
                 $message=new ChatMessage();
                 $message->sender_id=Auth::id();
@@ -100,5 +101,46 @@ class PusherChatMessageController extends Controller
                 $query->where('receiver_id', Auth::id());
             })->get();
         return view('pusher.admin-chat',compact('users','oldMessages','receiver_id'));
+    }
+    public function addReadReceipt(Request $request)
+    {
+        $messageId=null;
+        if($request->message_id != null)
+        {
+            $messageId=\Crypt::decrypt($request->message_id);
+            // $messageId=$request->message_id;
+            try {
+                // Start a database transaction
+                DB::beginTransaction();
+                ReadReceipt::where([
+                    'user_id' => Auth::id(),
+                    'message_id' => $messageId,
+                ])->lockForUpdate()->first(); //to prevent concurrent request
+                $read = ReadReceipt::firstOrCreate(
+                    [
+                        'user_id' => Auth::id(),
+                        'message_id' => $messageId,
+                    ],
+                    [
+                        'seen_at' => now(), // Use Laravel's now() helper to set the current timestamp
+                    ]
+                );
+
+                // Commit the transaction
+                DB::commit();
+                return response()->json(['message_id'=>$read]);
+            } catch (\Exception $e) {
+                // Handle any exceptions that may occur during the transaction
+                // You can roll back the transaction here if needed
+                DB::rollBack();
+
+                // Log or handle the exception as appropriate for your application
+            }
+
+
+        }
+
+
+
     }
 }

@@ -37,4 +37,5 @@ Route::group(['middleware' => 'auth:web'], function () {
     Route::post('broadcast',[PusherChatMessageController::class, 'broadcast'])->name('broadcast');
     Route::post('receive',[PusherChatMessageController::class, 'receive'])->name('receive');
     Route::get('get-user-messages/{user_id}',[PusherChatMessageController::class, 'getUserMessages'])->name('get-user-messages');
+    Route::post('read-receipt',[PusherChatMessageController::class, 'addReadReceipt'])->name('read-receipt');
 });

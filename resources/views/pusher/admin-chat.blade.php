@@ -13,7 +13,7 @@
             <div class="messages">
                 @foreach($oldMessages as $oldMessage)
                     @if($oldMessage->sender_id == Auth::id())
-                        <div class="right message">
+                        <div class="right message" data-messageId="{{ \Crypt::encrypt($oldMessage->id) }}">
                             {{--  <img class="avatar-img" src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" width="100px" alt="">  --}}
                             @if(isset($oldMessage->file) && $oldMessage->file != null)
                             <img class="message-image" src="{{ asset($oldMessage->file) }}" alt="">
@@ -24,10 +24,10 @@
                             @endif
                         </div>
                     @else
-                    <div class="left message">
+                    <div class="left message" data-messageId="{{ \Crypt::encrypt($oldMessage->id) }}">
                         {{--  <img class="avatar-img" src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" width="100px"  alt="">  --}}
                         @if(isset($oldMessage->file) && $oldMessage->file != null)
-                        <img class="message-image" src="{{ $oldMessage->file }}" alt="" width="100%">
+                        <img class="message-image" src="{{ asset($oldMessage->file) }}" alt="" width="100%">
                             <br>
                         @endif
                         @if($oldMessage->message != null)
@@ -94,6 +94,7 @@
             if(selected_id == data.sender_id)
             {
                 $('.messages > .message').last().after(res);
+                getAllMessages();
                 $(document).scrollTop($(document).height());
             }
         })
@@ -121,6 +122,7 @@
             previewImage.style.display='none';
             $('.messages > .message').last().after(res);
             $('form #message').val('');
+            getAllMessages();
             $(document).scrollTop($(document).height());
         })
     });
@@ -154,7 +156,48 @@
         }
       })
 
+      {{--  for read record   --}}
+      {{--  var mouse = {
+        x: undefined,
+        y:undefined
+    };
 
+    window.addEventListener("mousemove", function(event) {
+        mouse.x = event.x;
+        mouse.y = event.y;
+        console.log(mouse);
+    });  --}}
+    window.addEventListener('scroll', function () {
+        getAllMessages();
+
+    });
+    function getAllMessages()
+    {
+        const messages = document.querySelectorAll('.message');
+        messages.forEach((message)=>{
+
+          const rect = message.getBoundingClientRect();
+          const isVisible = (rect.top >= 0 && rect.bottom <= window.innerHeight);
+          if (isVisible) {
+              // Mark the message as read and send a request to the server
+              markMessageAsRead(message);
+          }
+        });
+    }
+    function markMessageAsRead(message)
+    {
+    const messageId = $(message).attr('data-messageId');
+    var url="{{ route('read-receipt') }}";
+    $.ajax({
+        url:url,
+        method:'POST',
+        data: JSON.stringify({ message_id: messageId }), // Convert data to JSON string
+        contentType: 'application/json',
+
+    }).done(function(res){
+        console.log(res);
+    })
+    }
 
 </script>
 
