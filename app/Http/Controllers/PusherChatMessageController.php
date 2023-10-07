@@ -7,7 +7,6 @@ use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use App\Events\PusherBroadcast;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\Mime\Message;
 
 use Illuminate\Support\Facades\Auth;
 use function Symfony\Component\HttpFoundation\Session\Storage\Handler\rollback;
@@ -20,76 +19,26 @@ class PusherChatMessageController extends Controller
         if(Auth::user()->role == 'admin')
         {
             $users=User::where('id','<>',auth()->user()->id)->get();
-            $messages=ChatMessage::where('sender_id',auth()->user()->id)
-                ->where(function($query) use($receiver_id){
-                    $query->where('sender_id',auth()->user()->id);
-                    $query->where('receiver_id',$receiver_id);
-                })
-                ->orWhere(function($query) use($receiver_id){
-                    $query->where('sender_id',$receiver_id);
-                    $query->where('receiver_id',auth()->user()->id);
-                })
-                ->get();
-            return view('pusher.admin-chat',compact('users','messages'));
+
+            return view('pusher.admin-chat-default',compact('users'));
         }
         else{
+            $admin=User::where('role','admin')->first();
             $oldMessages=ChatMessage::where('sender_id',auth()->user()->id)
                 ->orWhere('receiver_id',auth()->user()->id)
                 ->get();
-            return view('pusher.client-chat',compact('oldMessages'));
+            $receiver_id=$admin->id;
+            return view('pusher.client-chat',compact('oldMessages','receiver_id'));
         }
     }
-    // public function adminChat()
+    // public function fetchMessages()
     // {
-    //     $receiver_id=1;
-    //     if(auth()->user()->id==1){
-    //         $receiver_id=2;
-    //     }
-
-    //     $users=User::where('id','<>',auth()->user()->id)->get();
-    //     $messages=ChatMessage::where('sender_id',auth()->user()->id)
-    //         ->where(function($query) use($receiver_id){
-    //             $query->where('sender_id',auth()->user()->id);
-    //             $query->where('receiver_id',$receiver_id);
-    //         })
-    //         ->orWhere(function($query) use($receiver_id){
-    //             $query->where('sender_id',$receiver_id);
-    //             $query->where('receiver_id',auth()->user()->id);
-    //         })
-    //         ->get();
-    //     return view('pusher.admin-chat',compact('users','messages'));
-    // }
-    public function store(Request $request)
-    {
-        //
-    }
-    public function fetchMessages()
-    {
-        return ChatMessage::with('user')->get();
-    }
-    // public function clientChat(Request $request)
-    // {
-    //     $receiver_id=1;
-    //     if(auth()->user()->id==1){
-    //         $receiver_id=2;
-    //     }
-
-    //     $users=User::where('id','<>',auth()->user()->id)->get();
-    //     $messages=ChatMessage::where('sender_id',auth()->user()->id)
-    //         ->where(function($query) use($receiver_id){
-    //             $query->where('sender_id',auth()->user()->id);
-    //             $query->where('receiver_id',$receiver_id);
-    //         })
-    //         ->orWhere(function($query) use($receiver_id){
-    //             $query->where('sender_id',$receiver_id);
-    //             $query->where('receiver_id',auth()->user()->id);
-    //         })
-    //         ->get();
-    //     return view('pusher.chat',compact('users','messages'));
+    //     return ChatMessage::with('user')->get();
     // }
     public function broadcast(Request $request)
     {
-        $admin=User::where('role','admin')->first();
+
+        $receiver_id=\Crypt::decrypt($request->receiver_id);
         $filePath='';
         try{
             DB::beginTransaction();
@@ -101,7 +50,7 @@ class PusherChatMessageController extends Controller
 
                 $message=new ChatMessage();
                 $message->sender_id=Auth::id();
-                $message->receiver_id=$admin->id;
+                $message->receiver_id=$receiver_id;
                 $message->file=$filePath;
                 $message->save();
             }
@@ -109,14 +58,20 @@ class PusherChatMessageController extends Controller
             {
                 $message=new ChatMessage();
                 $message->sender_id=Auth::id();
-                $message->receiver_id=$admin->id;
+                $message->receiver_id=$receiver_id;
                 $message->message=$request->message;
                 $message->save();
             }
-
-            broadcast(new PusherBroadcast($request->get('message'),$request->get('files')))->toOthers();
+            $data=[
+                'message'=>$request->get('message'),
+                'filePath'=> $filePath,
+                'sender_id'=>$message->sender_id,
+                'receiver_id'=>$message->receiver_id
+            ];
+            broadcast(new PusherBroadcast($request->get('message'),$filePath,$message->sender_id,$message->receiver_id))->toOthers();
             DB::commit();
-            return view('pusher.broadcast',['message'=>$request->get('message'),'filePath'=> $filePath]);
+
+            return view('pusher.broadcast',$data);
         }catch (Exception $e) {
             DB::rollback();
             return $e->getMessage();
@@ -126,6 +81,24 @@ class PusherChatMessageController extends Controller
     }
     public function receive(Request $request)
     {
-        return view('pusher.receive',['message'=>$request->get('message')]);
+        $data=[
+            'message'=>$request->get('message'),
+            'sender_id'=>$request->get('sender_id'),
+            'filePath'=>$request->get('filePath')
+        ];
+        return view('pusher.receive',$data);
+    }
+    public function getUserMessages($user_id)
+    {
+        $receiver_id=\Crypt::decrypt($user_id);
+        $users=User::where('id','<>',auth()->user()->id)->get();
+        $oldMessages = ChatMessage::where(function ($query) use ($receiver_id) {
+                $query->where('sender_id', Auth::id());
+                $query->where('receiver_id', $receiver_id);
+            })->orWhere(function ($query) use ($receiver_id) {
+                $query->where('sender_id', $receiver_id);
+                $query->where('receiver_id', Auth::id());
+            })->get();
+        return view('pusher.admin-chat',compact('users','oldMessages','receiver_id'));
     }
 }

@@ -39,21 +39,7 @@
         height: 150px;
         overflow: auto;
     }  --}}
-    .message-box{
-        display: flex;
-        align-items: center;
-    }
-    .message-input{
-        display: flex;
-        flex-direction: column;
-        width: 100%
-    }
-    .message-input div{
-        width: 100%;
-    }
-    .message-input div input{
-        width: 100% !important;
-    }
+
 
 
 </style>
@@ -73,7 +59,7 @@
                 <div class="right message">
                     {{--  <img class="avatar-img" src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" width="100px" alt="">  --}}
                     @if(isset($oldMessage->file) && $oldMessage->file != null)
-                    <img class="message-image" src="{{ $oldMessage->file }}" alt="" width="100%">
+                    <img class="message-image" src="{{ asset($oldMessage->file) }}" alt="">
                     <br>
                     @endif
                     @if($oldMessage->message != null)
@@ -88,7 +74,7 @@
                     <br>
                 @endif
                 @if($oldMessage->message != null)
-                <p>{{ $message }}</p>
+                <p>{{ $oldMessage->message }}</p>
                 @endif
             </div>
             @endif
@@ -97,6 +83,7 @@
     </div>
     <div class="bottom">
         <form action="" id="message_form" enctype="multipart/form-data" >
+            <input type="hidden" name="receiver_id" value="{{ \Crypt::encrypt($receiver_id) }}" >
             @csrf
             <div class="message-box">
                 <div class="file-upload ">
@@ -127,15 +114,22 @@
 
 {{--  <script src="{{ asset('assets/js/chat.js') }}"></script>  --}}
 <script>
+    ()=>{
+        $(document).scrollTop($(document).height());
+    }
     var pusher = new Pusher('0a18b98ebbd0c7def518', {
         cluster: 'ap1'
       });
-    var channel = pusher.subscribe('public');
+    var reciever_id={!! json_encode(Auth::id()) !!};
+    var channelName='public'+reciever_id;
+    var channel = pusher.subscribe(channelName);
+
     channel.bind('chat', function(data) {
         var url="{{ route('receive') }}";
         $.post(url,{
             _token:'{{ csrf_token() }}',
             message:data.message,
+            filePath:data.filePath,
         }).done(function(res){
             $('.messages > .message').last().after(res);
             $(document).scrollTop($(document).height());
@@ -146,10 +140,9 @@
         var url="{{ route('broadcast') }}";
         var form = $(this)[0];
         var formData = new FormData(form);
-        formData.forEach(function (value, key) {
+        {{--  formData.forEach(function (value, key) {
             console.log(key, value);
-            // You can perform validation or other checks here
-        });
+        });  --}}
         $.ajax({
             url:url,
             method:'POST',
