@@ -4,7 +4,7 @@
     <div class="user-list">
         <ul class="list-group list-group-flush">
             @foreach($users as $user)
-                <li class="list-group-item {{ $receiver_id==$user->id?'active':'' }}"><a  href="{{ route('get-user-messages',Crypt::encrypt($user->id)) }}">{{ $user->name }}</a><span class="badge bg-danger">10</span></li>
+                <li  class="list-group-item {{ $receiver_id==$user->id?'active':'' }}"><a id="noti-{{ $user->id }}" class=" " href="{{ route('get-user-messages',Crypt::encrypt($user->id)) }}">{{ $user->name }}</a></li>
             @endforeach
         </ul>
     </div>
@@ -70,17 +70,16 @@
 
 @endsection
 @section('js')
-
-{{--  <script src="{{ asset('assets/js/chat.js') }}"></script>  --}}
 <script>
     ()=>{
         $(document).scrollTop($(document).height());
     }
+
     var pusher = new Pusher('0a18b98ebbd0c7def518', {
         cluster: 'ap1'
       });
     var reciever_id={!! json_encode(Auth::id()) !!};
-    var channelName='public'+reciever_id;
+    var channelName='private'+reciever_id;
     var channel = pusher.subscribe(channelName);
     channel.bind('chat', function(data) {
         var url="{{ route('receive') }}";
@@ -88,6 +87,8 @@
             _token:'{{ csrf_token() }}',
             message:data.message,
             sender_id:data.sender_id,
+            receiver_id:data.receiver_id,
+            message_id:data.message_id,
             filePath:data.filePath,
         }).done(function(res){
             var selected_id={!! $receiver_id !!};
@@ -98,7 +99,13 @@
                 $(document).scrollTop($(document).height());
             }
         })
-      });
+    });
+    {{--  for noti  --}}
+    var notiChannel = pusher.subscribe('public');
+    notiChannel.bind('chat', function(data) {
+        $('#noti-'+data.sender_id).addClass('font-weight-bold');
+        console.log(data);
+    });
     $('#message_form').submit(function(event){
         event.preventDefault();
         var url="{{ route('broadcast') }}";
@@ -121,6 +128,7 @@
             const previewImage = document.getElementById('previewImage');
             previewImage.style.display='none';
             $('.messages > .message').last().after(res);
+            $('#fileInput').val('');
             $('form #message').val('');
             getAllMessages();
             $(document).scrollTop($(document).height());
@@ -156,17 +164,8 @@
         }
       })
 
-      {{--  for read record   --}}
-      {{--  var mouse = {
-        x: undefined,
-        y:undefined
-    };
+    {{--  for read record   --}}
 
-    window.addEventListener("mousemove", function(event) {
-        mouse.x = event.x;
-        mouse.y = event.y;
-        console.log(mouse);
-    });  --}}
     window.addEventListener('scroll', function () {
         getAllMessages();
 
@@ -195,10 +194,8 @@
         contentType: 'application/json',
 
     }).done(function(res){
-        console.log(res);
     })
     }
 
 </script>
-
 @endsection

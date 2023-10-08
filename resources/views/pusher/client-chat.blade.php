@@ -111,8 +111,6 @@
 
 @endsection
 @section('js')
-
-{{--  <script src="{{ asset('assets/js/chat.js') }}"></script>  --}}
 <script>
     ()=>{
         $(document).scrollTop($(document).height());
@@ -121,7 +119,7 @@
         cluster: 'ap1'
       });
     var reciever_id={!! json_encode(Auth::id()) !!};
-    var channelName='public'+reciever_id;
+    var channelName='private'+reciever_id;
     var channel = pusher.subscribe(channelName);
 
     channel.bind('chat', function(data) {
@@ -129,6 +127,9 @@
         $.post(url,{
             _token:'{{ csrf_token() }}',
             message:data.message,
+            sender_id:data.sender_id,
+            receiver_id:data.receiver_id,
+            message_id:data.message_id,
             filePath:data.filePath,
         }).done(function(res){
             $('.messages > .message').last().after(res);
@@ -156,6 +157,7 @@
         }).done(function(res){
             const previewImage = document.getElementById('previewImage');
             previewImage.style.display='none';
+            $('#fileInput').val('');
             $('.messages > .message').last().after(res);
             $('form #message').val('');
             $(document).scrollTop($(document).height());

@@ -18,17 +18,19 @@ class PusherBroadcast implements ShouldBroadcast
     public $filePath;
     public $sender_id;
     public $receiver_id;
+    public $message_id;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($message,$filePath,$sender_id,$receiver_id)
+    public function __construct($message,$filePath,$sender_id,$receiver_id,$message_id)
     {
         $this->message=$message;
         $this->filePath=$filePath;
         $this->sender_id=$sender_id;
         $this->receiver_id=$receiver_id;
+        $this->message_id=$message_id;
     }
 
     /**
@@ -38,7 +40,7 @@ class PusherBroadcast implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return ['public' . $this->receiver_id ];
+        return ['public','private' . $this->receiver_id ];
         // return new PrivateChannel('channel-name');
     }
     public function broadcastAs()

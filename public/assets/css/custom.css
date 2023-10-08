@@ -211,6 +211,8 @@ body, h1, h2, h3, p, ul, li {
 
 /* Style the chat box */
 .chat-box {
+    position: relative;
+    overflow: auto;
     height: 100vh;
     width: 75%; /* Adjust the width as needed */
     background-color: #fff;
@@ -309,6 +311,9 @@ body, h1, h2, h3, p, ul, li {
     width: 100% !important;
 }
 /* admin chat  */
+.font-weight-bold{
+    font-weight: bold;
+}
 .user-list a{
     text-decoration: none;
     color: black;

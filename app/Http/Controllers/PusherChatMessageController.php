@@ -67,9 +67,10 @@ class PusherChatMessageController extends Controller
                 'message'=>$request->get('message'),
                 'filePath'=> $filePath,
                 'sender_id'=>$message->sender_id,
-                'receiver_id'=>$message->receiver_id
+                'receiver_id'=>$message->receiver_id,
+                'message_id'=>$message->id,
             ];
-            broadcast(new PusherBroadcast($request->get('message'),$filePath,$message->sender_id,$message->receiver_id))->toOthers();
+            broadcast(new PusherBroadcast($request->get('message'),$filePath,$message->sender_id,$message->receiver_id,$message->id))->toOthers();
             DB::commit();
 
             return view('pusher.broadcast',$data);
@@ -85,6 +86,8 @@ class PusherChatMessageController extends Controller
         $data=[
             'message'=>$request->get('message'),
             'sender_id'=>$request->get('sender_id'),
+            'receiver_id'=>$request->get('receiver_id'),
+            'message_id'=>$request->get('message_id'),
             'filePath'=>$request->get('filePath')
         ];
         return view('pusher.receive',$data);
@@ -136,11 +139,6 @@ class PusherChatMessageController extends Controller
 
                 // Log or handle the exception as appropriate for your application
             }
-
-
         }
-
-
-
     }
 }
