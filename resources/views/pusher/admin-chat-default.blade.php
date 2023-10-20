@@ -4,7 +4,7 @@
     <div class="user-list">
         <ul class="list-group list-group-flush">
             @foreach($users as $user)
-                <li class="list-group-item"><a  href="{{ route('get-user-messages',Crypt::encrypt($user->id)) }}">{{ $user->name }}</a><span class="badge bg-danger">10</span></li>
+                <li class="list-group-item"><a  href="{{ route('get-user-messages',Crypt::encrypt($user->id)) }}">{{ $user->name }}</a></li>
             @endforeach
         </ul>
     </div>

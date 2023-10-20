@@ -45,7 +45,7 @@
 </style>
 @endsection
 @section('content')
-<div class="chat">
+<div class="client-chat chat">
     <div class="top">
         <img src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" width="100px"  alt="">
         <div>
@@ -53,7 +53,7 @@
             <small>Online</small>
         </div>
     </div>
-    <div class="messages">
+    <div class="client-messages messages">
         @foreach($oldMessages as $oldMessage)
             @if($oldMessage->sender_id == Auth::id())
                 <div class="right message">

@@ -19,9 +19,24 @@ class PusherChatMessageController extends Controller
     {
         if(Auth::user()->role == 'admin')
         {
-            $users=User::where('id','<>',auth()->user()->id)->get();
+            $usersWithMessages=User::join('chat_messages','users.id','=','chat_messages.sender_id')
+                ->select('users.*')
+                ->orderBy('users.name')
+                ->distinct()
+                ->get();
 
-            return view('pusher.admin-chat-default',compact('users'));
+            $users=User::leftJoin('chat_messages','users.id','=','chat_messages.receiver_id')
+                ->select('users.*')
+                ->where('users.id','<>',auth()->user()->id)
+                ->whereNotIn('users.id',$usersWithMessages->pluck('id'))
+                ->orderBy('users.name')
+                ->get();
+
+            $receiver_id=Auth::id();
+            $oldMessages=ChatMessage::where('sender_id',auth()->user()->id)
+                ->where('receiver_id',auth()->user()->id)
+                ->get();
+            return view('pusher.admin-chat',compact('users','receiver_id','oldMessages','usersWithMessages'));
         }
         else{
             $admin=User::where('role','admin')->first();
@@ -95,7 +110,18 @@ class PusherChatMessageController extends Controller
     public function getUserMessages($user_id)
     {
         $receiver_id=\Crypt::decrypt($user_id);
-        $users=User::where('id','<>',auth()->user()->id)->get();
+        $usersWithMessages=User::join('chat_messages','users.id','=','chat_messages.sender_id')
+                ->select('users.*')
+                ->orderBy('users.name')
+                ->distinct()
+                ->get();
+
+        $users=User::leftJoin('chat_messages','users.id','=','chat_messages.receiver_id')
+                ->select('users.*')
+                ->where('users.id','<>',auth()->user()->id)
+                ->whereNotIn('users.id',$usersWithMessages->pluck('id'))
+                ->orderBy('users.name')
+                ->get();
         $oldMessages = ChatMessage::where(function ($query) use ($receiver_id) {
                 $query->where('sender_id', Auth::id());
                 $query->where('receiver_id', $receiver_id);
@@ -103,7 +129,7 @@ class PusherChatMessageController extends Controller
                 $query->where('sender_id', $receiver_id);
                 $query->where('receiver_id', Auth::id());
             })->get();
-        return view('pusher.admin-chat',compact('users','oldMessages','receiver_id'));
+        return view('pusher.admin-chat',compact('users','oldMessages','receiver_id','usersWithMessages'));
     }
     public function addReadReceipt(Request $request)
     {

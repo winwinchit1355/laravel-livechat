@@ -3,13 +3,18 @@
 <div class="chat-container">
     <div class="user-list">
         <ul class="list-group list-group-flush">
+            <li id="default-user" class="list-group-item  {{ $receiver_id==Auth::id()?'active':'' }}"><a id="noti-{{ Auth::id() }}" class="w-100 d-block " href="{{ route('get-user-messages',Crypt::encrypt(Auth::id())) }}">{{ Auth::user()->name }}</a>
+            </li>
+            @foreach($usersWithMessages as $user)
+                <li id="user-{{ $user->id }}" class="list-group-item {{ $receiver_id==$user->id?'active':'' }}"><a id="noti-{{ $user->id }}" data-id="{{ $user->id }}" class="user-chat w-100 d-block" href="{{ route('get-user-messages',Crypt::encrypt($user->id)) }}">{{ $user->name }}</a></li>
+            @endforeach
             @foreach($users as $user)
-                <li  class="list-group-item {{ $receiver_id==$user->id?'active':'' }}"><a id="noti-{{ $user->id }}" class=" " href="{{ route('get-user-messages',Crypt::encrypt($user->id)) }}">{{ $user->name }}</a></li>
+                <li id="user-{{ $user->id }}" class="list-group-item {{ $receiver_id==$user->id?'active':'' }}"><a id="noti-{{ $user->id }}" data-id="{{ $user->id }}" class="user-chat w-100 d-block" href="{{ route('get-user-messages',Crypt::encrypt($user->id)) }}">{{ $user->name }}</a></li>
             @endforeach
         </ul>
     </div>
-    <div class="chat-box">
-        <div class="chat">
+    {{--  <div class="chat-box">  --}}
+        <div class="chat ">
             <div class="messages">
                 @foreach($oldMessages as $oldMessage)
                     @if($oldMessage->sender_id == Auth::id())
@@ -65,16 +70,31 @@
                 </form>
             </div>
         </div>
-    </div>
+    {{--  </div>  --}}
 </div>
 
 @endsection
 @section('js')
 <script>
-    ()=>{
+    {{--  ()=>{
         $(document).scrollTop($(document).height());
-    }
-
+        var senderList=localStorage.getItem('senderList');
+        var myArray = JSON.parse(senderList);
+        for(var i=0;i<myArray.length;i++)
+        {
+            console.log('#noti-'+myArray[i])
+            $('#noti-'+myArray[i]).addClass('font-weight-bold');
+        }
+    }  --}}
+    $( document ).ready(function() {
+        $(document).scrollTop($(document).height());
+        var senderList=localStorage.getItem('senderList');
+        var myArray = JSON.parse(senderList);
+        for(var i=0;i<myArray.length;i++)
+        {
+            $('#noti-'+myArray[i]).addClass('font-weight-bold');
+        }
+    });
     var pusher = new Pusher('0a18b98ebbd0c7def518', {
         cluster: 'ap1'
       });
@@ -104,7 +124,21 @@
     var notiChannel = pusher.subscribe('public');
     notiChannel.bind('chat', function(data) {
         $('#noti-'+data.sender_id).addClass('font-weight-bold');
-        console.log(data);
+        var sendMessageLi=document.getElementById('user-'+data.sender_id);
+        sendMessageLi.parentNode.removeChild(sendMessageLi);
+        $('#default-user').after(sendMessageLi);
+        var senderList=localStorage.getItem('senderList');
+        var myArray = JSON.parse(senderList);
+        if(myArray == null)
+        {
+            var myArray=[];
+        }
+        if (!myArray.includes(data.sender_id)) {
+            myArray.push(data.sender_id);
+          }
+        var jsonString = JSON.stringify(myArray);
+        localStorage.setItem('senderList',jsonString);
+        console.log(jsonString);
     });
     $('#message_form').submit(function(event){
         event.preventDefault();
@@ -196,6 +230,25 @@
     }).done(function(res){
     })
     }
+    $('.user-chat').on('click',function(e){
+        e.preventDefault();
+        var jsonString =localStorage.getItem('senderList')
+
+        var senderList = JSON.parse(jsonString);
+        if(senderList != null)
+        {
+            var value=$(this).attr('data-id');
+
+            senderList = senderList.filter(function(item) {
+
+                return item != value
+            })
+
+            let jsonString = JSON.stringify(senderList);
+            localStorage.setItem('senderList',jsonString);
+        }
+        window.location.href = $(this).attr('href');
+    })
 
 </script>
 @endsection

@@ -28,6 +28,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'email_verified_at',
+        'remember_token',
     ];
 
     /**
@@ -48,5 +50,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function receiverMessages()
+    {
+        return $this->hasMany(ChatMessage::class,'receiver_id');
+    }
 
 }

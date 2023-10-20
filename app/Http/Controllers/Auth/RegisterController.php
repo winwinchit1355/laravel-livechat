@@ -69,6 +69,8 @@ class RegisterController extends Controller
             'role' => $data['role'],
             'name' => $data['name'],
             'email' => $data['email'],
+            'email_verified_at'=>date('Y-m-d H:i:s'),
+            'remember_token'=>uniqid(),
             'password' => Hash::make($data['password']),
         ]);
     }

@@ -19,6 +19,7 @@ class UserTableSeeder extends Seeder
             'id' => 1,
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
+            'role'=>'admin',
             'email_verified_at' => now(),
             'password' => Hash::make('123456')
         ]);
@@ -26,8 +27,10 @@ class UserTableSeeder extends Seeder
             'id' => 2,
             'name' => 'Test',
             'email' => 'test@gmail.com',
+            'role'=>'user',
             'email_verified_at' => now(),
             'password' => Hash::make('123456')
         ]);
+        \App\Models\User::factory(50)->create();
     }
 }
