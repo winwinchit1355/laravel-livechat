@@ -20,6 +20,7 @@ class PusherChatMessageController extends Controller
         if(Auth::user()->role == 'admin')
         {
             $usersWithMessages=User::join('chat_messages','users.id','=','chat_messages.sender_id')
+                ->where('users.id','<>',auth()->user()->id)
                 ->select('users.*')
                 ->orderBy('users.name')
                 ->distinct()
@@ -111,6 +112,7 @@ class PusherChatMessageController extends Controller
     {
         $receiver_id=\Crypt::decrypt($user_id);
         $usersWithMessages=User::join('chat_messages','users.id','=','chat_messages.sender_id')
+                ->where('users.id','<>',auth()->user()->id)
                 ->select('users.*')
                 ->orderBy('users.name')
                 ->distinct()
